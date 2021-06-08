@@ -3,7 +3,8 @@ import argparse
 from torch.utils.data import DataLoader
 import torch
 from transformers import ElectraTokenizerFast
-from pytorch_finetuning import pytorch_finetuning, siamese_electra
+from pytorch_finetuning import pytorch_finetuning
+from pytorch_finetuning.electra_for_logistic_regression import ElectraForLogisticRegression
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser() 
@@ -14,7 +15,6 @@ if __name__ == '__main__':
     parser.add_argument("pretrained_electra_path", help="Path to pretrained Electra model (TODO make this optional)") 
 
     parser.add_argument("--doc_max_len", default=128, help="Max number of tokens to use (do not use more than 512 tokens")
-    parser.add_argument("--teacher", default="", help="Path to optional teacher (doc-query model) to use")
     parser.add_argument("--gpu_num", default="0", help="GPU ID")
     parser.add_argument("--random_seed", default=0, help="Random seed")
     parser.add_argument("--num_epochs", default=20, help="Number of training epochs")
@@ -28,7 +28,6 @@ if __name__ == '__main__':
     DEV_TSV=args.dev_tsv
     DOC_MAX_LEN=args.doc_max_len
     NUM_TRAIN_EPOCHS=args.num_epochs
-    TEACHER=args.teacher
 
     tokenizer = ElectraTokenizerFast(TOKENIZER_PATH, strip_accents=False)
 
@@ -37,15 +36,13 @@ if __name__ == '__main__':
     else:
         device = torch.device("cpu")
 
-    train_dataset_cls = pytorch_finetuning.SiameseRelevanceDatasetDistillation if TEACHER else pytorch_finetuning.SiameseRelevanceDataset 
-
-    train_dataset = train_dataset_cls(
+    train_dataset = pytorch_finetuning.RelevanceDataset(
         TRAIN_TSV,
         max_len=DOC_MAX_LEN,
         tokenizer=tokenizer,
         nrows=None,
     )
-    dev_dataset = pytorch_finetuning.SiameseRelevanceDataset(
+    dev_dataset = pytorch_finetuning.RelevanceDataset(
         DEV_TSV,
         max_len=DOC_MAX_LEN,
         tokenizer=tokenizer,
@@ -60,39 +57,21 @@ if __name__ == '__main__':
                 dev_dataset.get_column('label'), dev_dataset.get_column('query'))
     }
 
-    model_name=f"siamese_electra_best{args.random_seed}"
+    model_name=f"querydoc_electra-{args.random_seed}"
 
     ## MAIN
     # Load pre-trained model, fine-tune on TRAIN_TSV data and save 
     # P@10 progression can be inspected using Tensorboard
-    if TEACHER:
-        pytorch_finetuning.train(
-            TEACHER,                                                                                                                                                                               
-            train_loader, 
-            dev_loader, 
-            num_epochs=NUM_TRAIN_EPOCHS,
-            device=device,
-            model_class=siamese_electra.SiameseElectraWithResidualMaxWithAdditionalHiddenLayer,
-            saving_path=SAVE_PATH,
-            student_starting_pytorch_dump=TEACHER,
-            finetuning_model_name=model_name,
-            metrics=metrics,
-            random_seed=args.random_seed,
-            grad_acc_steps=8,
-            attn_loss_distil=False,
-            )   
-
-    else:
-        pytorch_finetuning.train(
-            PRETRAINED_ELECTRA_PATH,
-            train_loader, 
-            dev_loader, 
-            num_epochs=NUM_TRAIN_EPOCHS,
-            device=device,
-            model_class=siamese_electra.SiameseElectraWithResidualMaxWithAdditionalHiddenLayer,
-            saving_path=SAVE_PATH,
-            finetuning_model_name=model_name,
-            metrics=metrics,
-            random_seed=args.random_seed,
-            grad_acc_steps=8
-            )
+    pytorch_finetuning.train(
+        PRETRAINED_ELECTRA_PATH,
+        train_loader, 
+        dev_loader, 
+        num_epochs=NUM_TRAIN_EPOCHS,
+        device=device,
+        model_class=ElectraForLogisticRegression,
+        saving_path=SAVE_PATH,
+        finetuning_model_name=model_name,
+        metrics=metrics,
+        random_seed=args.random_seed,
+        grad_acc_steps=8,
+    )   
