@@ -33,6 +33,8 @@ Before running the scripts, install requirements that are listed in [requirement
 pip install -r requirements.txt
 ```
 
+### Model Training
+
 To train a query-doc model with basic settings, run:
 
 ```
@@ -51,10 +53,22 @@ python train_siamese_model.py train.tsv dev.tsv outputs --teacher path_to_doc_qu
 
 Note that example scripts run training with our (unsupervisedly) pretrained Small-E-Czech model ([https://huggingface.co/Seznam/small-e-czech](https://huggingface.co/Seznam/small-e-czech)).
 
+### Model Evaluation
+
+To evaluate the trained query-doc model on test data, run:
+```
+python evaluate_model.py model_path test.tsv --is_querydoc
+```
+
+To evaluate the trained siamese model, run:
+```
+python evaluate_model.py model_path test.tsv --is_siamese
+```
+
 ## Acknowledgements
 
 If you use the dataset in your work, please cite the original paper:
 
 ```
-
+TODO
 ```

@@ -34,49 +34,51 @@ if __name__ == "__main__":
         default="",
         help="Path to optional teacher (doc-query model) to use",
     )
-    parser.add_argument("--gpu_num", default="0", help="GPU ID")
+    parser.add_argument("--batch_size", default=32, help="Batch size")
+    parser.add_argument(
+        "--grad_acc_steps", default=8, help="Gradient accumulation steps"
+    )
+    parser.add_argument("--gpu_num", default="0", help="GPU ID, Use -1 to run on CPU")
     parser.add_argument("--random_seed", default=0, help="Random seed")
     parser.add_argument("--num_epochs", default=20, help="Number of training epochs")
-
     args = parser.parse_args()
-
-    SAVE_PATH = args.save_path
-    TRAIN_TSV = args.train_tsv
-    DEV_TSV = args.dev_tsv
-    DOC_MAX_LEN = args.doc_max_len
-    NUM_TRAIN_EPOCHS = args.num_epochs
-    TEACHER = args.teacher
 
     tokenizer = ElectraTokenizerFast.from_pretrained("Seznam/small-e-czech")
 
-    if torch.cuda.is_available():
+    if torch.cuda.is_available() and args.gpu_num != "-1":
         device = torch.device(f"cuda:{args.gpu_num}")
     else:
         device = torch.device("cpu")
 
     train_dataset_cls = (
         pytorch_finetuning.SiameseRelevanceDatasetDistillation
-        if TEACHER
+        if args.teacher
         else pytorch_finetuning.SiameseRelevanceDataset
     )
 
     train_dataset = train_dataset_cls(
-        TRAIN_TSV,
-        max_len=DOC_MAX_LEN,
+        args.train_tsv,
+        max_len=args.doc_max_len,
         tokenizer=tokenizer,
         nrows=None,
     )
     dev_dataset = pytorch_finetuning.SiameseRelevanceDataset(
-        DEV_TSV,
-        max_len=DOC_MAX_LEN,
+        args.dev_tsv,
+        max_len=args.doc_max_len,
         tokenizer=tokenizer,
         nrows=None,
     )
 
     train_loader = DataLoader(
-        train_dataset, batch_size=32, num_workers=5, pin_memory=False, shuffle=True
+        train_dataset,
+        batch_size=args.batch_size,
+        num_workers=5,
+        pin_memory=False,
+        shuffle=True,
     )
-    dev_loader = DataLoader(dev_dataset, batch_size=32, num_workers=5, pin_memory=False)
+    dev_loader = DataLoader(
+        dev_dataset, batch_size=args.batch_size, num_workers=5, pin_memory=False
+    )
 
     metrics = {
         "p_at_10": lambda model, predictions: pytorch_finetuning.get_p_at_10_precision(
@@ -93,20 +95,20 @@ if __name__ == "__main__":
     ## MAIN
     # Load pre-trained model, fine-tune on TRAIN_TSV data and save
     # P@10 progression can be inspected using Tensorboard
-    if TEACHER:
+    if args.teacher:
         pytorch_finetuning.train(
-            TEACHER,
+            args.teacher,
             train_loader,
             dev_loader,
-            num_epochs=NUM_TRAIN_EPOCHS,
+            num_epochs=args.num_epochs,
             device=device,
             model_class=siamese_electra.SiameseElectraWithResidualMaxWithAdditionalHiddenLayer,
-            saving_path=SAVE_PATH,
-            student_starting_pytorch_dump=TEACHER,
+            saving_path=args.save_path,
+            student_starting_pytorch_dump=args.teacher,
             finetuning_model_name=model_name,
             metrics=metrics,
             random_seed=args.random_seed,
-            grad_acc_steps=8,
+            grad_acc_steps=args.grad_acc_steps,
             attn_loss_distil=False,
         )
 
@@ -115,10 +117,10 @@ if __name__ == "__main__":
             "Seznam/small-e-czech",
             train_loader,
             dev_loader,
-            num_epochs=NUM_TRAIN_EPOCHS,
+            num_epochs=args.num_epochs,
             device=device,
             model_class=siamese_electra.SiameseElectraWithResidualMaxWithAdditionalHiddenLayer,
-            saving_path=SAVE_PATH,
+            saving_path=args.save_path,
             finetuning_model_name=model_name,
             metrics=metrics,
             random_seed=args.random_seed,
