@@ -1,6 +1,6 @@
 # DaReCzech Dataset
 
-DaReCzech is a **dataset for text relevance ranking in Czech**. The dataset consists of more than 1.6 M annotated query-documents pairs, which makes it one of the largest available datasets for this task.
+DaReCzech is a **dataset for text relevance ranking in Czech**. The dataset consists of more than 1.6M annotated query-documents pairs, which makes it one of the largest available datasets for this task.
 
 The dataset was introduced in paper TODO.
 
@@ -27,7 +27,7 @@ Encoding: UTF-8.
 ## Baselines
 We provide code to train two BERT-based baseline models: query-doc model ([train_querydoc_model.py](train_querydoc_model.py)) and siamese model ([train_siamese_model.py](train_siamese_model.py)). 
 
-Before running the scripts, install requirements that are listed in [requirements.txt](requirements.txt).
+Before running the scripts, install requirements that are listed in [requirements.txt](requirements.txt). The scripts were tested with Python 3.6.
 
 ```
 pip install -r requirements.txt
@@ -35,7 +35,7 @@ pip install -r requirements.txt
 
 ### Model Training
 
-To train a query-doc model with basic settings, run:
+To train a query-doc model with default settings, run:
 
 ```
 python train_querydoc_model.py train.tsv dev.tsv outputs
@@ -46,9 +46,9 @@ To train a siamese model without a teacher, run:
 python train_siamese_model.py train.tsv dev.tsv outputs
 ```
 
-To train it with a query-doc teacher, run:
+To train a siamese model with a query-doc teacher, run:
 ```
-python train_siamese_model.py train.tsv dev.tsv outputs --teacher path_to_doc_query_checkpoint
+python train_siamese_model.py train.tsv dev.tsv outputs --teacher path_to_query_doc_checkpoint
 ```
 
 Note that example scripts run training with our (unsupervisedly) pretrained Small-E-Czech model ([https://huggingface.co/Seznam/small-e-czech](https://huggingface.co/Seznam/small-e-czech)).
@@ -60,7 +60,7 @@ To evaluate the trained query-doc model on test data, run:
 python evaluate_model.py model_path test.tsv --is_querydoc
 ```
 
-To evaluate the trained siamese model, run:
+To evaluate the trained siamese model on test data, run:
 ```
 python evaluate_model.py model_path test.tsv --is_siamese
 ```
