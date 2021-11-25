@@ -38,17 +38,17 @@ pip install -r requirements.txt
 To train a query-doc model with default settings, run:
 
 ```
-python train_querydoc_model.py train.tsv dev.tsv outputs
+python train_querydoc_model.py train_big.tsv dev.tsv outputs
 ```
 
 To train a siamese model without a teacher, run:
 ```
-python train_siamese_model.py train.tsv dev.tsv outputs
+python train_siamese_model.py train_big.tsv dev.tsv outputs
 ```
 
-To train a siamese model with a query-doc teacher, run:
+To train a siamese model with a trained query-doc teacher, run:
 ```
-python train_siamese_model.py train.tsv dev.tsv outputs --teacher path_to_query_doc_checkpoint
+python train_siamese_model.py train_big.tsv dev.tsv outputs --teacher path_to_query_doc_checkpoint
 ```
 
 Note that example scripts run training with our (unsupervisedly) pretrained Small-E-Czech model ([https://huggingface.co/Seznam/small-e-czech](https://huggingface.co/Seznam/small-e-czech)).
