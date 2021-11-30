@@ -6,7 +6,6 @@ import torch.nn.functional as F
 from transformers.file_utils import ModelOutput
 from transformers.modeling_electra import ElectraModel, ElectraPreTrainedModel
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -15,7 +14,9 @@ class CustomMetricPreTrainedModel(torch.nn.Module):
     def from_pretrained(cls, path):
         custom_metric = cls()
         custom_metric.load_state_dict(
-            torch.load(os.path.join(path, "pytorch_model.bin"), torch.device("cpu")),
+            torch.load(
+                os.path.join(path, "pytorch_model.bin"), torch.device("cpu")
+            ),
             strict=False,
         )
         return custom_metric
@@ -77,7 +78,10 @@ class ResidualMaxWithAdditionalHiddenLayer(CustomMetricPreTrainedModel):
         euclidean_distance = torch.norm(embs - embs2, 2, dim=1)
 
         max_emb = torch.max(embs, embs2)
-        features_projected = F.dropout(torch.nn.GELU()(self.layer_1(max_emb)), 0.25)
+        features_projected = F.dropout(
+            torch.nn.GELU()(self.layer_1(max_emb)),
+            0.25
+        )
         features = self.layer_2(features_projected)
         hidden = torch.nn.GELU()(features) + max_emb
         hidden = torch.cat(
@@ -108,7 +112,9 @@ class SiameseElectraPretrainedModel(ElectraPreTrainedModel):
         return ModelOutput(out) if return_dict else outputs
 
 
-class SiameseElectraWithWeightedCLSPretrainedModel(SiameseElectraPretrainedModel):
+class SiameseElectraWithWeightedCLSPretrainedModel(
+    SiameseElectraPretrainedModel
+):
     """
     Superclass for Siamese-like models utilizing weightening of [CLS] token.
     """
@@ -128,7 +134,9 @@ class SiameseElectraWithWeightedCLSPretrainedModel(SiameseElectraPretrainedModel
             ElectraModel from transformers library.
             embs2_hidden: see `embs_hidden`
         """
-        embs_cls = torch.cat([emb[:, 0, :].unsqueeze(1) for emb in embs_hidden], dim=1)
+        embs_cls = torch.cat(
+            [emb[:, 0, :].unsqueeze(1) for emb in embs_hidden], dim=1
+        )
         embs2_cls = torch.cat(
             [emb[:, 0, :].unsqueeze(1) for emb in embs2_hidden], dim=1
         )

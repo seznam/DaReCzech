@@ -1,13 +1,13 @@
-import os
 import argparse
-from torch.utils.data import DataLoader
-import torch
-from transformers import ElectraTokenizerFast
-from pytorch_finetuning import pytorch_finetuning
-from pytorch_finetuning.electra_for_logistic_regression import (
-    ElectraForLogisticRegression,
-)
 import logging
+
+import torch
+from torch.utils.data import DataLoader
+from transformers import ElectraTokenizerFast
+
+from pytorch_finetuning.electra_for_logistic_regression import \
+    ElectraForLogisticRegression
+from pytorch_finetuning import pytorch_finetuning
 
 logging.basicConfig(
     format="%(asctime)s %(levelname)s:%(message)s",
@@ -36,9 +36,15 @@ if __name__ == "__main__":
     parser.add_argument(
         "--grad_acc_steps", default=8, help="Gradient accumulation steps"
     )
-    parser.add_argument("--gpu_num", default="0", help="GPU ID, Use -1 to run on CPU")
-    parser.add_argument("--random_seed", default=0, help="Random seed")
-    parser.add_argument("--num_epochs", default=20, help="Number of training epochs")
+    parser.add_argument(
+        "--gpu_num", default="0", help="GPU ID, Use -1 to run on CPU"
+    )
+    parser.add_argument(
+        "--random_seed", default=0, help="Random seed"
+    )
+    parser.add_argument(
+        "--num_epochs", default=20, help="Number of training epochs"
+    )
     args = parser.parse_args()
 
     tokenizer = ElectraTokenizerFast.from_pretrained("Seznam/small-e-czech")
@@ -69,11 +75,15 @@ if __name__ == "__main__":
         shuffle=True,
     )
     dev_loader = DataLoader(
-        dev_dataset, batch_size=args.batch_size, num_workers=5, pin_memory=False
+        dev_dataset,
+        batch_size=args.batch_size,
+        num_workers=5,
+        pin_memory=False
     )
 
     metrics = {
-        "p_at_10": lambda model, predictions: pytorch_finetuning.get_p_at_10_precision(
+        "p_at_10": lambda model, predictions:
+        pytorch_finetuning.get_p_at_10_precision(
             None,
             None,
             predictions.squeeze(-1),
@@ -84,7 +94,7 @@ if __name__ == "__main__":
 
     model_name = f"querydoc_electra-{args.random_seed}"
 
-    ## MAIN
+    # MAIN
     # Load pre-trained model, fine-tune on TRAIN_TSV data and save
     # P@10 progression can be inspected using Tensorboard
     pytorch_finetuning.train(

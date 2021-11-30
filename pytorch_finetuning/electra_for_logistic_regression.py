@@ -1,11 +1,11 @@
 import logging
+from typing import List, Union
 
 import torch
 from torch import nn
+from transformers.activations import get_activation
 from transformers.file_utils import ModelOutput
 from transformers.modeling_electra import ElectraModel, ElectraPreTrainedModel
-from transformers.activations import get_activation
-from typing import List, Union
 
 logger = logging.getLogger(__name__)
 
@@ -149,7 +149,8 @@ class ElectraRelevanceTeacher(nn.Module):
                 model_class.from_pretrained(
                     pytorch_dump,
                     output_activation=(
-                        torch.nn.Sigmoid if cross_model_distillation else torch.nn.Tanh
+                        torch.nn.Sigmoid
+                        if cross_model_distillation else torch.nn.Tanh
                     ),
                     **(model_kwargs or {}),
                 )
@@ -159,7 +160,9 @@ class ElectraRelevanceTeacher(nn.Module):
                 for teacher in self.teacher:
                     teacher.train()
         else:
-            raise TypeError("starting_pytorch_dumps must be of a type str or List[str]")
+            raise TypeError(
+                "starting_pytorch_dumps must be of a type str or List[str]"
+            )
 
     def forward(
         self,
@@ -241,7 +244,11 @@ class ElectraRelevanceTeacher(nn.Module):
         if isinstance(teacher_outs, list):
             return tuple(
                 torch.stack(
-                    [teacher_outs[n].attentions[i] for n in range(len(teacher_outs))], 0
+                    [
+                        teacher_outs[n].attentions[i]
+                        for n in range(len(teacher_outs))
+                    ],
+                    0
                 ).mean(0)
                 for i in layers
             )

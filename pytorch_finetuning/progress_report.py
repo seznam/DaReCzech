@@ -11,7 +11,9 @@ def get_progress_reporter(progress_reporting, logger):
         return tqdm
     elif progress_reporting == "eta":
         return ETA(logger)
-    raise ValueError('progress_reporting should be either None, "tqdm" or "eta"')
+    raise ValueError(
+        'progress_reporting should be either None, "tqdm" or "eta"'
+    )
 
 
 def no_progress_report(iterable, *args, **kwargs):
@@ -76,7 +78,9 @@ class ETA:
                         "ETA {} {} ({})".format(
                             self.desc,
                             eta.replace(microsecond=0),
-                            timedelta(seconds=round(remaining.total_seconds())),
+                            timedelta(
+                                seconds=round(remaining.total_seconds())
+                            ),
                         )
                     )
                     self.last_eta = eta

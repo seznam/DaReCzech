@@ -1,10 +1,11 @@
-import os
 import argparse
-from torch.utils.data import DataLoader
-import torch
-from transformers import ElectraTokenizerFast
-from pytorch_finetuning import pytorch_finetuning, siamese_electra
 import logging
+
+import torch
+from torch.utils.data import DataLoader
+from transformers import ElectraTokenizerFast
+
+from pytorch_finetuning import pytorch_finetuning, siamese_electra
 
 logging.basicConfig(
     format="%(asctime)s %(levelname)s:%(message)s",
@@ -38,9 +39,15 @@ if __name__ == "__main__":
     parser.add_argument(
         "--grad_acc_steps", default=8, help="Gradient accumulation steps"
     )
-    parser.add_argument("--gpu_num", default="0", help="GPU ID, Use -1 to run on CPU")
-    parser.add_argument("--random_seed", default=0, help="Random seed")
-    parser.add_argument("--num_epochs", default=20, help="Number of training epochs")
+    parser.add_argument(
+        "--gpu_num", default="0", help="GPU ID, Use -1 to run on CPU"
+    )
+    parser.add_argument(
+        "--random_seed", default=0, help="Random seed"
+    )
+    parser.add_argument(
+        "--num_epochs", default=20, help="Number of training epochs"
+    )
     args = parser.parse_args()
 
     tokenizer = ElectraTokenizerFast.from_pretrained("Seznam/small-e-czech")
@@ -77,11 +84,15 @@ if __name__ == "__main__":
         shuffle=True,
     )
     dev_loader = DataLoader(
-        dev_dataset, batch_size=args.batch_size, num_workers=5, pin_memory=False
+        dev_dataset,
+        batch_size=args.batch_size,
+        num_workers=5,
+        pin_memory=False
     )
 
     metrics = {
-        "p_at_10": lambda model, predictions: pytorch_finetuning.get_p_at_10_precision(
+        "p_at_10":
+        lambda model, predictions: pytorch_finetuning.get_p_at_10_precision(
             None,
             None,
             predictions.squeeze(-1),
@@ -92,9 +103,10 @@ if __name__ == "__main__":
 
     model_name = f"siamese_electra_best{args.random_seed}"
 
-    ## MAIN
+    # MAIN
     # Load pre-trained model, fine-tune on TRAIN_TSV data and save
     # P@10 progression can be inspected using Tensorboard
+    mc = siamese_electra.SiameseElectraWithResidualMaxWithAdditionalHiddenLayer
     if args.teacher:
         pytorch_finetuning.train(
             args.teacher,
@@ -102,7 +114,7 @@ if __name__ == "__main__":
             dev_loader,
             num_epochs=args.num_epochs,
             device=device,
-            model_class=siamese_electra.SiameseElectraWithResidualMaxWithAdditionalHiddenLayer,
+            model_class=mc,
             saving_path=args.save_path,
             student_starting_pytorch_dump=args.teacher,
             finetuning_model_name=model_name,
@@ -119,7 +131,7 @@ if __name__ == "__main__":
             dev_loader,
             num_epochs=args.num_epochs,
             device=device,
-            model_class=siamese_electra.SiameseElectraWithResidualMaxWithAdditionalHiddenLayer,
+            model_class=mc,
             saving_path=args.save_path,
             finetuning_model_name=model_name,
             metrics=metrics,
