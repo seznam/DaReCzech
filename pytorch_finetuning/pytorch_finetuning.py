@@ -470,17 +470,14 @@ def get_inputs(model, tokenizer, device, *args):
     input_ids = (
         torch.tensor(input_dict["input_ids"], device=device)
         .unsqueeze(0)
-        .cuda(device)
     )
     attention_mask = (
         torch.tensor(input_dict["attention_mask"], device=device)
         .unsqueeze(0)
-        .cuda(device)
     )
     token_type_ids = (
         torch.tensor(input_dict["token_type_ids"], device=device)
         .unsqueeze(0)
-        .cuda(device)
     )
     return input_ids, attention_mask, token_type_ids
 
