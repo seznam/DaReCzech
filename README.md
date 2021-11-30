@@ -9,23 +9,28 @@ Please, first read a [disclaimer.txt](disclaimer.txt) that contains the terms of
 
 ## Overview 
 DaReCzech is divided into four parts: 
-- Train-big (more than 1.4M records) -- intended for training of a (neural) text relevance model
-- Train-small (97k records) -- intended for GBRT training
+- Train-big (more than 1.4M records) – intended for training of a (neural) text relevance model
+- Train-small (97k records) – intended for GBRT training (with a text relevance feature trained on Train-big)
 - Dev (41k records)
 - Test (64k records)
 
 Each set is distributed as a .tsv file with 6 columns:
-- ID -- unique record ID
-- query -- user query
-- url -- URL of annotated document
-- doc -- representation of the document under the URL, each document is represented using its title, URL and Body Text Extract (BTE) that was obtained using the internal module of our search engine
+- ID – unique record ID
+- query – user query
+- url – URL of annotated document
+- doc – representation of the document under the URL, each document is represented using its title, URL and Body Text Extract (BTE) that was obtained using the internal module of our search engine
 - title: document title
-- label -- the annotated relevance between the query and document. There are 5 relevance labels ranging from 0 (the document is not useful for given query) to 1 (document is for given query useful)
+- label – the annotated relevance of the document to the query. There are 5 relevance labels ranging from 0 (the document is not useful for given query) to 1 (document is for given query useful)
 
-Encoding: UTF-8.
+The files are UTF-8 encoded. The values never contain a tab and are not quoted nor escaped – to load the dataset in pandas, use
+```
+import csv
+import pandas as pd
+pd.read_csv(path, sep='\t', quoting=csv.QUOTE_NONE)
+```
 
 ## Baselines
-We provide code to train two BERT-based baseline models: query-doc model ([train_querydoc_model.py](train_querydoc_model.py)) and siamese model ([train_siamese_model.py](train_siamese_model.py)). 
+We provide code to train two BERT-based baseline models: a query-doc model ([train_querydoc_model.py](train_querydoc_model.py)) and a siamese model ([train_siamese_model.py](train_siamese_model.py)).
 
 Before running the scripts, install requirements that are listed in [requirements.txt](requirements.txt). The scripts were tested with Python 3.6.
 
@@ -51,7 +56,7 @@ To train a siamese model with a trained query-doc teacher, run:
 python train_siamese_model.py train_big.tsv dev.tsv outputs --teacher path_to_query_doc_checkpoint
 ```
 
-Note that example scripts run training with our (unsupervisedly) pretrained Small-E-Czech model ([https://huggingface.co/Seznam/small-e-czech](https://huggingface.co/Seznam/small-e-czech)).
+Note that example scripts run training with our (unsupervisedly) pretrained [Small-E-Czech](https://huggingface.co/Seznam/small-e-czech) model.
 
 ### Model Evaluation
 
