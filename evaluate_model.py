@@ -1,17 +1,15 @@
-import os
 import argparse
-from torch.utils.data import DataLoader
-import torch
-from transformers import ElectraTokenizerFast
-from pytorch_finetuning import pytorch_finetuning
-from pytorch_finetuning.electra_for_logistic_regression import (
-    ElectraForLogisticRegression,
-)
-
-from pytorch_finetuning.siamese_electra import (
-    SiameseElectraWithResidualMaxWithAdditionalHiddenLayer,
-)
 import logging
+
+import torch
+from torch.utils.data import DataLoader
+from transformers import ElectraTokenizerFast
+
+from pytorch_finetuning.electra_for_logistic_regression import \
+    ElectraForLogisticRegression
+from pytorch_finetuning.siamese_electra import \
+    SiameseElectraWithResidualMaxWithAdditionalHiddenLayer
+from pytorch_finetuning import pytorch_finetuning
 
 logging.basicConfig(
     format="%(asctime)s %(levelname)s:%(message)s",
@@ -21,7 +19,9 @@ logging.basicConfig(
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("model", type=str, help="Path to folder with saved model")
+    parser.add_argument(
+        "model", type=str, help="Path to folder with saved model"
+    )
     parser.add_argument(
         "eval_tsv", type=str, help="Path to TSV file with training data"
     )
@@ -39,7 +39,9 @@ if __name__ == "__main__":
         help="Evaluate siamese model.",
     )
 
-    parser.add_argument("--gpu_num", default="0", help="GPU ID, Use -1 to run on CPU")
+    parser.add_argument(
+        "--gpu_num", default="0", help="GPU ID, Use -1 to run on CPU"
+    )
     parser.add_argument(
         "--doc_max_len",
         default=128,
@@ -70,10 +72,16 @@ if __name__ == "__main__":
         nrows=None,
     )
 
-    dataset_loader = DataLoader(dataset, batch_size=32, num_workers=5, pin_memory=False)
+    dataset_loader = DataLoader(
+        dataset,
+        batch_size=32,
+        num_workers=5,
+        pin_memory=False
+    )
 
     metrics = {
-        "p_at_10": lambda model, predictions: pytorch_finetuning.get_p_at_10_precision(
+        "p_at_10":
+        lambda model, predictions: pytorch_finetuning.get_p_at_10_precision(
             None,
             None,
             predictions.squeeze(-1),
@@ -90,7 +98,9 @@ if __name__ == "__main__":
     model = model_cls.from_pretrained(args.model)
     model.to(device)
 
-    predictions = pytorch_finetuning.get_predictions(model, dataset_loader, device)
+    predictions = pytorch_finetuning.get_predictions(
+        model, dataset_loader, device
+    )
 
     for metric_name, metric_func in metrics.items():
         print(f"{metric_name}: {metric_func(model, predictions)}")

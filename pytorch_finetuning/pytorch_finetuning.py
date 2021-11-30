@@ -2,37 +2,31 @@ import csv
 import logging
 import os
 import random
-from shutil import copy
-from typing import Optional
-import time
-from datetime import datetime as dt
 import socket
+import time
+from collections.abc import Iterable
+from datetime import datetime as dt
+from typing import List, Union
 
 import numpy as np
 import pandas as pd
 import torch
 import transformers
-from collections.abc import Iterable
-from dataclasses import dataclass
-from torch.utils.data import DataLoader
+from catboost.utils import eval_metric
 from torch.utils.data import Dataset
 from torch.utils.tensorboard import SummaryWriter
-from typing import List, Union
-from catboost.utils import eval_metric
 
-from .electra_for_logistic_regression import (
-    ElectraForLogisticRegression,
-    ElectraRelevanceTeacher,
-)
-from .siamese_electra import (
-    SiameseElectraWithResidualMaxWithAdditionalHiddenLayer,
-)
-
+from .electra_for_logistic_regression import (ElectraForLogisticRegression,
+                                              ElectraRelevanceTeacher)
 from .progress_report import get_progress_reporter
+from .siamese_electra import \
+    SiameseElectraWithResidualMaxWithAdditionalHiddenLayer
 
 
 class TextDataset(Dataset):
-    def __init__(self, path, column, max_len, tokenizer, token_type_id, nrows=None):
+    def __init__(
+        self, path, column, max_len, tokenizer, token_type_id, nrows=None
+    ):
         self.path = path
         self.df = pd.read_csv(
             path,
@@ -63,7 +57,9 @@ class TextDataset(Dataset):
 
         input_ids = torch.tensor(input_dict["input_ids"])
         attention_mask = torch.tensor(input_dict["attention_mask"])
-        token_type_ids = torch.tensor(input_dict["attention_mask"]) * self.token_type_id
+        token_type_ids = (
+            torch.tensor(input_dict["attention_mask"]) * self.token_type_id
+        )
 
         return input_ids, attention_mask, token_type_ids, label
 
@@ -71,7 +67,9 @@ class TextDataset(Dataset):
 class RelevanceDataset(Dataset):
     def __init__(self, path, max_len, tokenizer, nrows=None):
         self.path = path
-        self.df = pd.read_csv(path, sep="\t", quoting=csv.QUOTE_NONE, nrows=nrows)
+        self.df = pd.read_csv(
+            path, sep="\t", quoting=csv.QUOTE_NONE, nrows=nrows
+        )
 
         self.tokenizer = tokenizer
         self.max_len = max_len
@@ -117,7 +115,9 @@ class SiameseRelevanceDataset(RelevanceDataset):
         input_ids = torch.tensor(input_dict["input_ids"])
         attention_mask = torch.tensor(input_dict["attention_mask"])
         # mark query with token_type_id=0 and doc with token_type_id=1
-        token_type_ids = torch.tensor(input_dict["attention_mask"]) * token_type_id
+        token_type_ids = (
+            torch.tensor(input_dict["attention_mask"]) * token_type_id
+        )
         return input_ids, attention_mask, token_type_ids
 
     def __getitem__(self, index):
@@ -150,7 +150,9 @@ class SiameseRelevanceDatasetDistillation(RelevanceDataset):
         input_ids = torch.tensor(input_dict["input_ids"])
         attention_mask = torch.tensor(input_dict["attention_mask"])
         # mark query with token_type_id=0 and doc with token_type_id=1
-        token_type_ids = torch.tensor(input_dict["attention_mask"]) * token_type_id
+        token_type_ids = (
+            torch.tensor(input_dict["attention_mask"]) * token_type_id
+        )
         return input_ids, attention_mask, token_type_ids
 
     def __getitem__(self, index):
@@ -190,7 +192,9 @@ def _eval(model, dev_loader, device, metrics, writer, it=0, logger=None):
     start_eval_time = time.time()
     model.eval()
 
-    loss, predictions = get_predictions(model, dev_loader, device, compute_loss=True)
+    loss, predictions = get_predictions(
+        model, dev_loader, device, compute_loss=True
+    )
     # dev loss gets logged automatically
     writer.add_scalar("dev/Loss", loss, it)
     logger.info(f"dev/Loss: {loss}")
@@ -200,7 +204,9 @@ def _eval(model, dev_loader, device, metrics, writer, it=0, logger=None):
             writer.add_scalar(name, metric_val, it)
             logger.info(f"{name}: {metric_val}")
     writer.flush()
-    logger.info("Evaluation took {:.2f} s".format(time.time() - start_eval_time))
+    logger.info(
+        "Evaluation took {:.2f} s".format(time.time() - start_eval_time)
+    )
 
 
 class Logger:
@@ -242,7 +248,10 @@ def get_model_iden(model_class):
         ),
     }.get(model_class, "unk")
 
-    return "{}_{}".format(class_iden, dt.strftime(dt.now(), "%Y_%m_%d_%H%M%S%f")[:-3])
+    return "{}_{}".format(
+        class_iden,
+        dt.strftime(dt.now(), "%Y_%m_%d_%H%M%S%f")[:-3]
+    )
 
 
 def _get_dataset_path(data_loader):
@@ -305,7 +314,9 @@ def train(
     to use.
 
     """
-    if not student_starting_pytorch_dump and isinstance(starting_pytorch_dump, list):
+    if not student_starting_pytorch_dump and (
+        isinstance(starting_pytorch_dump, list)
+    ):
         raise ValueError(
             "When student is not used, only a single model for training "
             "must be provided"
@@ -315,7 +326,8 @@ def train(
 
     # realize whether we do cross_model_distillation or standard KD
     if not distillation or (
-        student_starting_pytorch_dump and model_class is ElectraForLogisticRegression
+        student_starting_pytorch_dump
+        and model_class is ElectraForLogisticRegression
     ):
         # Standard knowledge distillation
         cross_model_distillation = False
@@ -369,9 +381,13 @@ def train(
                 student_starting_pytorch_dump, **(model_kwargs or {})
             )
             num_student_layers = model.config.num_hidden_layers
-            logger.info(f"Number of student hidden layers: {num_student_layers}.")
+            logger.info(
+                f"Number of student hidden layers: {num_student_layers}."
+            )
         else:
-            logger.info(f"Instantiating {model_class} from {starting_pytorch_dump}")
+            logger.info(
+                f"Instantiating {model_class} from {starting_pytorch_dump}"
+            )
             model = model_class.from_pretrained(
                 starting_pytorch_dump, **(model_kwargs or {})
             )
@@ -414,7 +430,8 @@ def train(
             else:
                 # inputs represent the List[List[...]]
                 inputs = [
-                    inputs_to_cuda_and_no_double(input_i, device) for input_i in inputs
+                    inputs_to_cuda_and_no_double(input_i, device)
+                    for input_i in inputs
                 ]
             if not student_starting_pytorch_dump:  # = standard training
                 _loss, *_ = model(*inputs)
@@ -451,17 +468,16 @@ def get_inputs(model, tokenizer, device, *args):
         truncation="longest_first",
     )
     input_ids = (
-        torch.tensor(input_dict["input_ids"], device=device).unsqueeze(0).cuda(device)
+        torch.tensor(input_dict["input_ids"], device=device)
+        .unsqueeze(0)
     )
     attention_mask = (
         torch.tensor(input_dict["attention_mask"], device=device)
         .unsqueeze(0)
-        .cuda(device)
     )
     token_type_ids = (
         torch.tensor(input_dict["token_type_ids"], device=device)
         .unsqueeze(0)
-        .cuda(device)
     )
     return input_ids, attention_mask, token_type_ids
 
@@ -520,7 +536,9 @@ def _get_distil_loss(
             student_n_layers=model.config.num_hidden_layers,
         )
     student_model_loss = student_outs.loss
-    soft_loss = soft_loss_fn(student_outs.logits.view(-1), teacher_outs.logits.view(-1))
+    soft_loss = soft_loss_fn(
+        student_outs.logits.view(-1), teacher_outs.logits.view(-1)
+    )
     loss = 0.5 * (student_model_loss + soft_loss)
 
     if attn_loss_distil:
@@ -600,14 +618,16 @@ def get_relevance_metric(metric, labels, predictions, group_ids):
 
     # group_ids must be grouped
     df = (
-        pd.DataFrame({"label": labels, "pred": predictions, "group_id": group_ids})
+        pd.DataFrame({
+            "label": labels, "pred": predictions, "group_id": group_ids
+        })
         .sort_values("group_id")
         .reset_index(drop=True)
     )
 
-    return eval_metric(df["label"], df["pred"], group_id=df["group_id"], metric=metric)[
-        0
-    ]
+    return eval_metric(
+        df["label"], df["pred"], group_id=df["group_id"], metric=metric
+    )[0]
 
 
 def get_p_at_10_precision(model, loader, predictions, labels, queries):
