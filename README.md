@@ -75,5 +75,10 @@ python evaluate_model.py model_path test.tsv --is_siamese
 If you use the dataset in your work, please cite the original paper:
 
 ```
-TODO
+@article{kocian2021siamese,
+  title={Siamese BERT-based Model for Web Search Relevance RankingEvaluated on a New Czech Dataset},
+  author={Kocian, Matěj and Náplava, Jakub and Štancl, Daniel and Kadlec, Vladimír},
+  journal={arXiv preprint arXiv:xxxx.xxxxx},
+  year={2021}
+}
 ```
