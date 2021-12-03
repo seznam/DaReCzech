@@ -5,7 +5,7 @@ DaReCzech is a **dataset for text relevance ranking in Czech**. The dataset cons
 The dataset was introduced in paper TODO.
 
 ## Obtaining the Annotated Data
-Please, first read a [disclaimer.txt](disclaimer.txt) that contains the terms of use. If you comply with them, send an email to srch.vyzkum@firma.seznam.cz and the link to the dataset will be sent to you. 
+Please, first read a [disclaimer](disclaimer.md) that contains the terms of use. If you comply with them, send an email to srch.vyzkum@firma.seznam.cz and the link to the dataset will be sent to you. 
 
 ## Overview 
 DaReCzech is divided into four parts: 
