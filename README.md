@@ -2,7 +2,7 @@
 
 DaReCzech is a **dataset for text relevance ranking in Czech**. The dataset consists of more than 1.6M annotated query-documents pairs, which makes it one of the largest available datasets for this task.
 
-The dataset was introduced in paper TODO.
+The dataset was introduced in paper [Siamese BERT-based Model for Web Search Relevance RankingEvaluated on a New Czech Dataset](https://arxiv.org/pdf/2112.01810.pdf).
 
 ## Obtaining the Annotated Data
 Please, first read a [disclaimer](disclaimer.md) that contains the terms of use. If you comply with them, send an email to srch.vyzkum@firma.seznam.cz and the link to the dataset will be sent to you. 
@@ -75,5 +75,10 @@ python evaluate_model.py model_path test.tsv --is_siamese
 If you use the dataset in your work, please cite the original paper:
 
 ```
-TODO
+@article{kocian2021siamese,
+  title={Siamese BERT-based Model for Web Search Relevance RankingEvaluated on a New Czech Dataset},
+  author={Kocián, Matěj and Náplava, Jakub and Štancl, Daniel and Kadlec, Vladimír},
+  journal={arXiv preprint arXiv:2112.01810},
+  year={2021}
+}
 ```
