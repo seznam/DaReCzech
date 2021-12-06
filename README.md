@@ -78,7 +78,7 @@ If you use the dataset in your work, please cite the original paper:
 @article{kocian2021siamese,
   title={Siamese BERT-based Model for Web Search Relevance RankingEvaluated on a New Czech Dataset},
   author={Kocián, Matěj and Náplava, Jakub and Štancl, Daniel and Kadlec, Vladimír},
-  journal={arXiv preprint arXiv:xxxx.xxxxx},
+  journal={arXiv preprint arXiv:2112.01810},
   year={2021}
 }
 ```
