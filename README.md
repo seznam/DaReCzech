@@ -75,5 +75,16 @@ python evaluate_model.py model_path test.tsv --is_siamese
 If you use the dataset in your work, please cite the original paper:
 
 ```
-@article{Kocián_Náplava_Štancl_Kadlec_2022, title={Siamese BERT-Based Model for Web Search Relevance Ranking Evaluated on a New Czech Dataset}, volume={36}, url={https://ojs.aaai.org/index.php/AAAI/article/view/21502}, DOI={10.1609/aaai.v36i11.21502}, number={11}, journal={Proceedings of the AAAI Conference on Artificial Intelligence}, author={Kocián, Matěj and Náplava, Jakub and Štancl, Daniel and Kadlec, Vladimír}, year={2022}, month={Jun.}, pages={12369-12377} }
+@article{Kocian_Naplava_Stancl_Kadlec_2022,
+  title={Siamese BERT-Based Model for Web Search Relevance Ranking Evaluated on a New Czech Dataset},
+  volume={36},
+  url={https://ojs.aaai.org/index.php/AAAI/article/view/21502},
+  DOI={10.1609/aaai.v36i11.21502},
+  number={11},
+  journal={Proceedings of the AAAI Conference on Artificial Intelligence},
+  author={Kocián, Matěj and Náplava, Jakub and Štancl, Daniel and Kadlec, Vladimír},
+  year={2022},
+  month={Jun.},
+  pages={12369-12377}
+}
 ```
